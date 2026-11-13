@@ -120,7 +120,7 @@ Topics: `/bayani/anomaly_score` (Float32) Â· `/bayani/anomaly_heatmap` (Image) Â
 - [`poster/Bayani-6_Poster.pdf`](poster/Bayani-6_Poster.pdf): academic four-column layout ([editable .pptx](poster/Bayani-6_Poster.pptx))
 - [`poster/Bayani-6_Landscape_Poster.pdf`](poster/Bayani-6_Landscape_Poster.pdf): A0 landscape layout ([editable .pptx](poster/Bayani-6_Landscape_Poster.pptx))
 
-> The result numbers on the posters are **placeholder sample values** until the arena trials are complete.
+> Poster results come from the prototype software and the browser simulation. Field trials on the robot are the next step, so no accuracy figures are claimed yet.
 
 ## Roadmap
 
