@@ -1,0 +1,13 @@
+# Patrol route in the SLAM map frame (metres, yaw in radians).
+# Drive the robot along the creek bank, note poses with
+#   ros2 run tf2_ros tf2_echo map base_link
+# and paste them here. The route loops back to the first waypoint.
+waypoints:
+  - {x: 0.0, y: 0.0, yaw: 0.0}
+  - {x: 1.5, y: 0.0, yaw: 0.0}
+  - {x: 3.0, y: 0.2, yaw: 0.0}
+  - {x: 4.5, y: 0.2, yaw: 0.0}
+  - {x: 4.5, y: -1.5, yaw: -1.57}
+  - {x: 3.0, y: -1.7, yaw: 3.14}
+  - {x: 1.5, y: -1.7, yaw: 3.14}
+  - {x: 0.0, y: -1.5, yaw: 3.14}
