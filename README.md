@@ -115,6 +115,10 @@ ros2 launch bayani_core bayani.launch.py calibration_video:=/path/to/clean_water
 
 Topics: `/bayani/anomaly_score` (Float32) · `/bayani/anomaly_heatmap` (Image) · `/bayani/hotspot` (PointStamped) · `/arm/command`, `/arm/status` (String).
 
+## Presentation
+
+- [`presentation/Bayani-6_Presentation.pdf`](presentation/Bayani-6_Presentation.pdf): 13-slide talk ([editable .pptx](presentation/Bayani-6_Presentation.pptx), speaker notes on every slide)
+
 ## Posters
 
 - [`poster/Bayani-6_Poster.pdf`](poster/Bayani-6_Poster.pdf): academic four-column layout ([editable .pptx](poster/Bayani-6_Poster.pptx))
