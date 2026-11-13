@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BAYANI-6 · Autonomous Estero Guardian</title>
+  <meta name="description" content="Bayani-6: an edge-AI mobile robot that patrols urban creeks, detects pollution, maps hotspots and takes water samples autonomously.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg class="sun" viewBox="-50 -50 100 100" aria-hidden="true">
+        <g class="rays">
+          <path d="M0-46 L5-24 L-5-24 Z"/><path d="M0-46 L5-24 L-5-24 Z" transform="rotate(45)"/>
+          <path d="M0-46 L5-24 L-5-24 Z" transform="rotate(90)"/><path d="M0-46 L5-24 L-5-24 Z" transform="rotate(135)"/>
+          <path d="M0-46 L5-24 L-5-24 Z" transform="rotate(180)"/><path d="M0-46 L5-24 L-5-24 Z" transform="rotate(225)"/>
+          <path d="M0-46 L5-24 L-5-24 Z" transform="rotate(270)"/><path d="M0-46 L5-24 L-5-24 Z" transform="rotate(315)"/>
+        </g>
+        <circle r="17"/>
+      </svg>
+      <div class="brand-text">
+        <span class="brand-name">BAYANI-6</span>
+        <span class="brand-sub">Autonomous estero guardian</span>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="overview" role="tab">Overview</button>
+      <button class="tab" data-tab="mission" role="tab">Live mission</button>
+      <button class="tab" data-tab="how" role="tab">How it works</button>
+      <button class="tab" data-tab="hardware" role="tab">Hardware</button>
+    </nav>
+    <div class="status-cluster">
+      <span class="sim-badge" title="Telemetry is simulated in the browser">SIM</span>
+      <span class="status-pill" id="statusPill"><i></i><b id="statusText">STANDBY</b></span>
+      <span class="readout"><small>T+</small><b id="missionClock">00:00:00</b></span>
+      <span class="readout"><small>BATT</small><b id="battery">100%</b></span>
+    </div>
+  </header>
+
+  <main>
+    <!-- ================= OVERVIEW ================= -->
+    <section class="view active" id="view-overview">
+      <div class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">BITS Pilani, Dubai Campus · Robotics prototype</p>
+          <h1>BAYANI<span>-6</span></h1>
+          <p class="pron"><em>ba·ya·ni</em> — Tagalog for <strong>hero</strong></p>
+          <p class="lede">A robot that patrols urban creeks, spots pollution with on-board AI, pins each hotspot on a map and takes a water sample. No lab queue. No human in the loop.</p>
+          <div class="hero-actions">
+            <button class="btn primary" data-goto="mission">Launch live mission</button>
+            <button class="btn ghost" data-goto="how">See how it works</button>
+          </div>
+          <dl class="hero-facts">
+            <div><dt>60 s</dt><dd>of clean-water video is all it trains on</dd></div>
+            <div><dt>0</dt><dd>labelled images needed</dd></div>
+            <div><dt>~32 FPS</dt><dd>target inference on Jetson Orin Nano</dd></div>
+          </dl>
+        </div>
+        <figure class="hero-photo">
+          <img src="assets/bayani6_robot.jpg" alt="Bayani-6: AgileX LIMO Cobot with myCobot arm">
+          <figcaption><span>UNIT 02</span> AgileX LIMO Cobot · myCobot 6-DoF arm</figcaption>
+        </figure>
+      </div>
+
+      <div class="triad">
+        <article>
+          <h3><span>01</span> The problem</h3>
+          <p>Illegal industrial dumping into the esteros of Manila's Pasig River basin is linked to cholera, typhoid and heavy-metal exposure. Fixed sensors can't move. Manual sampling is risky and lab results take weeks.</p>
+        </article>
+        <article>
+          <h3><span>02</span> Our approach</h3>
+          <p>Bayani-6 learns what <em>clean</em> water looks like, then flags anything that doesn't fit: oil sheens, sludge, foam, weed mats. It stops, records its exact SLAM position and dips its arm to collect a sample.</p>
+        </article>
+        <article>
+          <h3><span>03</span> The output</h3>
+          <p>Every hotspot is written to a CSV and turned into a contamination heatmap, so city teams can trace pollution back to the pipe it came from instead of guessing.</p>
+        </article>
+      </div>
+
+      <footer class="credits">
+        <span>Rithikh Chandran · Reuben Thomas</span>
+        <span>Dept. of Electrical &amp; Electronics Engineering, BITS Pilani, Dubai Campus</span>
+        <a href="https://github.com/RithikhC/ESTERO-6" target="_blank" rel="noopener">github.com/RithikhC/ESTERO-6</a>
+      </footer>
+    </section>
+
+    <!-- ================= LIVE MISSION ================= -->
+    <section class="view" id="view-mission">
+      <div class="mission">
+        <div class="strip">
+          <ol class="pipeline" id="pipeline">
+            <li data-stage="0"><b>01</b>Patrol</li>
+            <li data-stage="1"><b>02</b>See</li>
+            <li data-stage="2"><b>03</b>Detect</li>
+            <li data-stage="3"><b>04</b>Decide</li>
+            <li data-stage="4"><b>05</b>Pin</li>
+            <li data-stage="5"><b>06</b>Sample</li>
+            <li data-stage="6"><b>07</b>Map</li>
+          </ol>
+          <div class="stats">
+            <div><small>Distance</small><b id="statDist">0.0 m</b></div>
+            <div><small>Hotspots</small><b id="statHot">0</b></div>
+            <div><small>Samples</small><b id="statSamples">0</b></div>
+            <div><small>False halts</small><b id="statFalse">0</b></div>
+            <div><small>Loc. error</small><b id="statErr">—</b></div>
+            <div><small>Infer. FPS</small><b id="statFps">—</b></div>
+          </div>
+        </div>
+
+        <div class="panel map-panel">
+          <div class="panel-head">
+            <h4>Map · /map + /scan</h4>
+            <div class="controls">
+              <button class="ctl" id="btnRun">Run</button>
+              <div class="seg" id="speedSeg">
+                <button data-speed="1" class="on">1×</button><button data-speed="2">2×</button><button data-speed="4">4×</button>
+              </div>
+              <button class="ctl" id="btnReset" title="Reset mission">Reset</button>
+              <span class="sep"></span>
+              <label class="tog"><input type="checkbox" id="togLidar" checked><span>LiDAR</span></label>
+              <label class="tog"><input type="checkbox" id="togHeat" checked><span>Heatmap</span></label>
+              <label class="tog"><input type="checkbox" id="togTruth" checked><span>Pollutants</span></label>
+            </div>
+          </div>
+          <div class="map-wrap" id="mapWrap">
+            <canvas id="mapCanvas"></canvas>
+            <div class="map-hud">
+              <span id="cursorPos">x —  y —</span>
+            </div>
+            <div class="drop-tool">
+              <select id="dropType" aria-label="Pollutant type">
+                <option value="oil">Oil sheen</option>
+                <option value="foam">Industrial foam</option>
+                <option value="sludge">Sludge</option>
+                <option value="weeds">Weed mat</option>
+              </select>
+              <button class="ctl" id="btnDrop">Drop pollutant</button>
+            </div>
+            <div class="drop-hint" id="dropHint">Click inside the creek to drop a pollutant · Esc to cancel</div>
+          </div>
+        </div>
+
+        <div class="side">
+          <div class="panel cam-panel">
+            <div class="panel-head">
+              <h4>CAM0 · /camera/color/image_raw</h4>
+              <span class="rec"><i></i>LIVE</span>
+            </div>
+            <div class="cam-wrap">
+              <canvas id="camCanvas" width="256" height="144"></canvas>
+              <canvas id="camOverlay"></canvas>
+            </div>
+          </div>
+          <div class="panel chart-panel">
+            <div class="panel-head">
+              <h4>/bayani/anomaly_score</h4>
+              <label class="thr">Trigger <input type="range" id="thr" min="0.5" max="0.95" step="0.01" value="0.80"><b id="thrVal">0.80</b></label>
+            </div>
+            <canvas id="chartCanvas"></canvas>
+          </div>
+        </div>
+
+        <div class="bottom">
+          <div class="panel arm-panel">
+            <div class="panel-head"><h4>Arm · myCobot 6-DoF</h4><span class="tag" id="armState">STOWED</span></div>
+            <canvas id="armCanvas"></canvas>
+            <div class="joints" id="joints"></div>
+          </div>
+          <div class="panel hot-panel">
+            <div class="panel-head"><h4>Hotspots · hotspots.csv</h4><button class="ctl" id="btnCsv">Export CSV</button></div>
+            <div class="table-wrap">
+              <table id="hotTable">
+                <thead><tr><th>ID</th><th>X (m)</th><th>Y (m)</th><th>Score</th><th>Appearance</th><th>Sample</th></tr></thead>
+                <tbody></tbody>
+              </table>
+              <p class="empty" id="hotEmpty">No hotspots yet. Press <b>Run</b> to start the patrol.</p>
+            </div>
+          </div>
+          <div class="panel log-panel">
+            <div class="panel-head"><h4>/rosout</h4><span class="keys">Space run · 1/2/4 speed · H heat · L lidar · P drop</span></div>
+            <div class="log" id="log"></div>
+          </div>
+        </div>
+      </div>
+      <p class="sim-note">Browser simulation of the Bayani-6 mission loop. Map, telemetry and camera feed are generated live for demonstration.</p>
+    </section>
+
+    <!-- ================= HOW IT WORKS ================= -->
+    <section class="view" id="view-how">
+      <div class="how">
+        <div class="how-head">
+          <p class="eyebrow">System architecture · ROS 2 Humble</p>
+          <h2>One loop, fully on board</h2>
+          <p class="lede small">Everything runs on the robot's Jetson. No cloud, no remote operator. These are the nodes and topics the live mission simulates.</p>
+        </div>
+        <div class="graph panel">
+          <svg viewBox="0 0 1100 420" id="nodeGraph" role="img" aria-label="ROS 2 node graph">
+            <defs>
+              <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z"/></marker>
+            </defs>
+            <g class="edges">
+              <path d="M190 70 H358"/><text x="274" y="58">/camera/color/image_raw</text>
+              <path d="M190 230 H358"/><text x="274" y="218">/scan</text>
+              <path d="M550 70 C600 70 590 148 628 148"/><text x="562" y="104" class="l">/bayani/anomaly_score</text>
+              <path d="M550 230 C600 230 590 172 628 172"/><text x="562" y="262" class="l">/tf  map→base_link</text>
+              <path d="M860 145 C900 145 895 70 928 70"/><text x="1005" y="28">pause / resume</text>
+              <path d="M860 175 C900 175 895 230 928 230"/><text x="1005" y="282">/arm/command</text>
+              <path d="M745 195 V328"/><text x="757" y="268" class="l">/bayani/hotspot</text>
+            </g>
+            <g class="nodes">
+              <g transform="translate(20,40)"><rect width="170" height="60"/><text x="85" y="27">orbbec_camera</text><text x="85" y="45" class="sub">RGB-D · 30 fps</text></g>
+              <g transform="translate(20,200)"><rect width="170" height="60"/><text x="85" y="27">lidar_driver</text><text x="85" y="45" class="sub">2D LiDAR</text></g>
+              <g transform="translate(360,40)"><rect width="190" height="60"/><text x="95" y="27">anomaly_detector</text><text x="95" y="45" class="sub">AnomalyNet · TensorRT</text></g>
+              <g transform="translate(360,200)"><rect width="190" height="60"/><text x="95" y="27">cartographer</text><text x="95" y="45" class="sub">2D SLAM</text></g>
+              <g transform="translate(630,125)" class="hl"><rect width="230" height="70"/><text x="115" y="31">bayani_master</text><text x="115" y="50" class="sub">decides: halt · pin · sample</text></g>
+              <g transform="translate(930,40)"><rect width="150" height="60"/><text x="75" y="27">nav2</text><text x="75" y="45" class="sub">waypoint follower</text></g>
+              <g transform="translate(930,200)"><rect width="150" height="60"/><text x="75" y="27">arm_sampler</text><text x="75" y="45" class="sub">myCobot 6-DoF</text></g>
+              <g transform="translate(640,330)" class="out"><rect width="210" height="60"/><text x="105" y="27">hotspots.csv</text><text x="105" y="45" class="sub">→ contamination heatmap</text></g>
+            </g>
+          </svg>
+        </div>
+        <ol class="steps">
+          <li><b>01</b><h5>Patrol</h5><p>Nav2 drives a fixed waypoint route along the creek bank while Cartographer keeps a live LiDAR map.</p></li>
+          <li><b>02</b><h5>See</h5><p>The Orbbec RGB-D camera streams the water surface straight into the Jetson.</p></li>
+          <li><b>03</b><h5>Detect</h5><p>A patch-based anomaly model, trained only on 60 s of clean water, scores every frame from 0 to 1.</p></li>
+          <li><b>04</b><h5>Decide</h5><p>Score above the trigger (0.8 by default) and not a known hotspot? The master node pauses Nav2.</p></li>
+          <li><b>05</b><h5>Pin</h5><p>The robot's exact (X, Y) comes from the SLAM transform tree via tf2.</p></li>
+          <li><b>06</b><h5>Sample</h5><p>The myCobot arm runs a pre-planned dip sequence: descend, hold for 3 s, stow.</p></li>
+          <li><b>07</b><h5>Map</h5><p>The hotspot is appended to hotspots.csv, the heatmap updates and the patrol resumes.</p></li>
+        </ol>
+        <div class="why panel">
+          <h3>Why unsupervised?</h3>
+          <p>Pollution doesn't come in tidy labelled classes. A slick can be rainbow or grey; foam, sludge and weeds change with light and season. Instead of training on thousands of labelled pictures of dirt, Bayani-6 learns one thing really well: what normal water looks like. Anything that doesn't fit gets a high score.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= HARDWARE ================= -->
+    <section class="view" id="view-hardware">
+      <div class="hw">
+        <figure class="hw-photo panel">
+          <img src="assets/bayani6_robot.jpg" alt="Bayani-6 robot">
+        </figure>
+        <div class="hw-specs">
+          <p class="eyebrow">Unmodified off-the-shelf platform</p>
+          <h2>AgileX LIMO Cobot</h2>
+          <p class="lede small">No custom hardware. Every capability in Bayani-6 is software running on a stock robot, which keeps it cheap to copy for other cities.</p>
+          <ul class="spec-list">
+            <li><b>Compute</b><span>NVIDIA Jetson Orin Nano · Ubuntu 22.04 · ROS 2 Humble</span></li>
+            <li><b>Vision</b><span>Orbbec RGB-D depth camera</span></li>
+            <li><b>Navigation</b><span>2D LiDAR · Cartographer SLAM · Nav2</span></li>
+            <li><b>Manipulator</b><span>myCobot 280 6-DoF arm · pre-planned dip sequence</span></li>
+            <li><b>Model</b><span>Patch-based unsupervised anomaly detector, TensorRT engine</span></li>
+            <li><b>Output</b><span>hotspots.csv → 2D contamination heatmap</span></li>
+          </ul>
+          <h3 class="next-h">Next up</h3>
+          <ul class="next">
+            <li>Plain-English search with a vision-language model: <em>"find frothy run-off"</em></li>
+            <li>pH, conductivity and turbidity probes on the gripper</li>
+            <li>Several robots sharing one map over Wi-Fi</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/world.js"></script>
+  <script src="js/camera.js"></script>
+  <script src="js/arm.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
