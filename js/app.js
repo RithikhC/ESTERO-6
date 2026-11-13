@@ -466,6 +466,9 @@
   document.querySelectorAll(".tab, [data-goto]").forEach((b) => b.addEventListener("click", () => document.body.classList.remove("instant")));
   const initial = (location.hash || "#overview").slice(1);
   if (["overview", "mission", "how", "hardware"].includes(initial)) showTab(initial);
+  // ?thr=0.6 sets the trigger threshold (for testing the glare trade-off)
+  const thrQ = +new URLSearchParams(location.search).get("thr");
+  if (thrQ >= 0.5 && thrQ <= 0.95) { st.threshold = thrQ; $("thr").value = thrQ; $("thrVal").textContent = thrQ.toFixed(2); }
   // ?demo opens the live mission already running (handy for presenting); ?demo=4 sets the speed
   const demo = new URLSearchParams(location.search).get("demo");
   if (demo !== null) {
