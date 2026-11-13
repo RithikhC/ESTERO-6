@@ -8,6 +8,7 @@
   const STEP = 0.05;           // 20 Hz simulation tick
   const SIGMA = 0.85;          // camera footprint response (m)
   const WAYPOINTS = 14;
+  const RACK = 6;               // sample tubes on the rear deck
   const TYPE_LABEL = { oil: "Oil sheen", foam: "Foam", sludge: "Sludge", weeds: "Weed mat" };
 
   const st = {};
@@ -34,7 +35,7 @@
       score: 0.1, noise: 0.03, threshold: st.threshold || 0.8, mode: "standby", modeT: 0,
       glare: { t: 0, dur: 0, amp: 0, x: 0, val: 0 }, dist: 0, lastTrail: 0,
       samples: 0, falseHalts: 0, battery: 100, cooldown: 0, history: [], pending: null,
-      hotspots: [], lastSkip: null, scrollPx: 0, fps: 32.4, armK: 0, armFill: 0, ripple: -1, nextAnomId: 6,
+      hotspots: [], rack: Array(RACK).fill("empty"), lastSkip: null, scrollPx: 0, fps: 32.4, armK: 0, armFill: 0, ripple: -1, nextAnomId: 6,
       anomalies: [
         makeAnomaly(1, "oil", 9.0, 0.3, 0.93),
         makeAnomaly(2, "foam", 14.5, -0.4, 0.9),
@@ -92,7 +93,10 @@
       const p = world.routeAt(st.s);
       const ox = st.robot.x, oy = st.robot.y;
       st.robot.x = p.x; st.robot.y = p.y;
-      st.robot.heading = lerpAngle(st.robot.heading, p.heading, 1 - Math.exp(-dt * 8));
+      // mecanum crab-walk: on the banks the body (and its forward camera) faces the water
+      const look = world.cameraTarget(p.x, p.y);
+      const want = look.dist < 0.3 ? p.heading : look.dir;
+      st.robot.heading = lerpAngle(st.robot.heading, want, 1 - Math.exp(-dt * 6));
       if (st.dist - st.lastTrail > 0.25) {
         st.trail.push([p.x, p.y]); st.lastTrail = st.dist;
         if (st.trail.length > 320) st.trail.shift();
@@ -154,7 +158,19 @@
         if (st.modeT >= 0.8) { setMode("pin"); }
         break;
       case "pin":
-        if (st.modeT >= 0.6) { pin(); setMode("sample"); log("info", "arm_sampler: executing dip_sample · 6 joints"); }
+        if (st.modeT >= 0.6) {
+          pin();
+          if (st.samples >= RACK) {
+            const hs = st.hotspots[st.hotspots.length - 1];
+            hs.status = "ns";
+            log("warn", `sample rack full (${RACK}/${RACK}) · ${hs.id} logged without a sample`);
+            renderTable();
+            setMode("map");
+          } else {
+            setMode("sample");
+            log("info", `arm_sampler: dip_sample · picking tube from rack slot ${st.samples + 1}`);
+          }
+        }
         break;
       case "sample": {
         const t = st.modeT, hs = st.hotspots[st.hotspots.length - 1];
@@ -163,10 +179,10 @@
           if (st.ripple < 0) log("info", `sample #${st.samples + 1}: gripper at water line · holding 3.0 s`);
           st.armK = 1; st.armFill = (t - 1.5) / 3; st.ripple = t - 1.5;
         } else if (t < 6) {
-          if (st.ripple >= 0) { log("info", `sample #${st.samples + 1} captured · stowing arm`); st.ripple = -1; }
+          if (st.ripple >= 0) { log("info", `sample #${st.samples + 1} captured · tube back in slot ${st.samples + 1}, stowing arm`); st.ripple = -1; }
           st.armK = 1 - (t - 4.5) / 1.5; st.armFill = 1;
         } else {
-          st.armK = 0; st.samples++;
+          st.armK = 0; st.rack[st.samples] = "full"; st.samples++;
           hs.status = hs.falsePositive ? "fp" : "ok";
           if (hs.falsePositive) { st.falseHalts++; log("warn", `ground truth: ${hs.id} was surface glare · false halt`); }
           renderTable();
@@ -249,39 +265,39 @@
     const Y = (v) => T + gh * (1 - v);
     c.font = "10.5px 'IBM Plex Mono', monospace";
     for (let v = 0; v <= 1.001; v += 0.2) {
-      c.strokeStyle = "#18222c"; c.lineWidth = 1;
+      c.strokeStyle = "#e6ebf0"; c.lineWidth = 1;
       c.beginPath(); c.moveTo(L, Math.round(Y(v)) + 0.5); c.lineTo(w - R, Math.round(Y(v)) + 0.5); c.stroke();
-      c.fillStyle = "#55636f"; c.fillText(v.toFixed(1), 6, Y(v) + 4);
+      c.fillStyle = "#8794a1"; c.fillText(v.toFixed(1), 6, Y(v) + 4);
     }
-    c.fillStyle = "#55636f";
+    c.fillStyle = "#8794a1";
     c.fillText("last 20 s", w - R - 58, h - 6);
     const hist = st.history, N = 400;
     const X = (i) => L + gw * ((i + (N - hist.length)) / (N - 1));
     // halt markers
     hist.forEach((p, i) => {
       if (!p.halt) return;
-      c.strokeStyle = "rgba(255,176,32,0.7)"; c.lineWidth = 1.5;
+      c.strokeStyle = "rgba(224,138,0,0.8)"; c.lineWidth = 1.5;
       c.beginPath(); c.moveTo(X(i), T); c.lineTo(X(i), T + gh); c.stroke();
-      c.fillStyle = "#ffb020"; c.fillText("HALT", X(i) + 4, T + 10);
+      c.fillStyle = "#b06c00"; c.fillText("HALT", X(i) + 4, T + 10);
     });
     if (hist.length > 1) {
       const grad = c.createLinearGradient(0, T, 0, T + gh);
-      grad.addColorStop(0, "rgba(43,179,192,0.35)"); grad.addColorStop(1, "rgba(43,179,192,0)");
+      grad.addColorStop(0, "rgba(11,127,140,0.22)"); grad.addColorStop(1, "rgba(11,127,140,0)");
       c.beginPath(); c.moveTo(X(0), Y(0));
       hist.forEach((p, i) => c.lineTo(X(i), Y(p.v)));
       c.lineTo(X(hist.length - 1), Y(0)); c.closePath();
       c.fillStyle = grad; c.fill();
       c.lineWidth = 1.8;
       for (let i = 1; i < hist.length; i++) {
-        c.strokeStyle = hist[i].v > st.threshold ? "#ff4d3d" : "#2bb3c0";
+        c.strokeStyle = hist[i].v > st.threshold ? "#d93a2b" : "#0b7f8c";
         c.beginPath(); c.moveTo(X(i - 1), Y(hist[i - 1].v)); c.lineTo(X(i), Y(hist[i].v)); c.stroke();
       }
     }
     c.save();
-    c.setLineDash([6, 5]); c.strokeStyle = "#ffb020"; c.lineWidth = 1.2;
+    c.setLineDash([6, 5]); c.strokeStyle = "#e08a00"; c.lineWidth = 1.2;
     c.beginPath(); c.moveTo(L, Y(st.threshold)); c.lineTo(w - R, Y(st.threshold)); c.stroke();
     c.restore();
-    c.fillStyle = "#ffb020"; c.fillText(`trigger ${st.threshold.toFixed(2)}`, L + 6, Y(st.threshold) - 5);
+    c.fillStyle = "#b06c00"; c.fillText(`trigger ${st.threshold.toFixed(2)}`, L + 6, Y(st.threshold) - 5);
   }
 
   function renderTable(flash) {
@@ -291,9 +307,9 @@
     st.hotspots.slice().reverse().forEach((h, idx) => {
       const tr = document.createElement("tr");
       if (flash && idx === 0) tr.className = "new";
-      const col = h.type ? world.POLLUTANT_COLORS[h.type] : "#55636f";
+      const col = h.type ? world.POLLUTANT_COLORS[h.type] : "#8794a1";
       const app = h.type ? TYPE_LABEL[h.type] : "Glare";
-      const stat = h.status === "ok" ? '<span class="st ok">SAMPLED</span>' : h.status === "fp" ? '<span class="st fp">FALSE +</span>' : '<span class="st run">IN PROGRESS</span>';
+      const stat = h.status === "ok" ? '<span class="st ok">SAMPLED</span>' : h.status === "fp" ? '<span class="st fp">FALSE +</span>' : h.status === "ns" ? '<span class="st ns">RACK FULL</span>' : '<span class="st run">IN PROGRESS</span>';
       tr.innerHTML = `<td class="id">${h.id}</td><td>${fmt(h.x)}</td><td>${fmt(h.y)}</td><td>${fmt(h.score)}</td><td><span class="swatch" style="background:${col}"></span>${app}</td><td>${stat}</td>`;
       tb.appendChild(tr);
     });
@@ -337,7 +353,9 @@
       t: st.anim, scroll: st.scrollPx, items: camItems(), score: st.score, threshold: st.threshold,
       fps: st.running ? st.fps : 0, mode: st.mode, glare: st.glare.val / 0.6, glareX: st.glare.x, paused: !st.running,
     });
-    B6.arm.render(st.armK, st.armFill, st.ripple, st.anim);
+    const rack = st.rack.slice();
+    if (st.mode === "sample" && st.samples < RACK) rack[st.samples] = "active";
+    B6.arm.render(st.armK, st.armFill, st.ripple, st.anim, rack);
     renderChart();
   }
 
@@ -384,8 +402,8 @@
     $("btnDrop").classList.toggle("on", v);
   }
   function exportCsv() {
-    const rows = [["id", "mission_time_s", "x_m", "y_m", "score", "appearance", "sample_status"]];
-    st.hotspots.forEach((h) => rows.push([h.id, fmt(h.missionT, 1), fmt(h.x, 3), fmt(h.y, 3), fmt(h.score, 3), h.type || "glare", h.status === "ok" ? "sampled" : h.status === "fp" ? "false_positive" : "in_progress"]));
+    const rows = [["id", "mission_time_s", "x_m", "y_m", "score", "appearance", "rack_slot", "sample_status"]];
+    st.hotspots.forEach((h) => rows.push([h.id, fmt(h.missionT, 1), fmt(h.x, 3), fmt(h.y, 3), fmt(h.score, 3), h.type || "glare", h.status === "ns" ? "" : "slot " + (st.hotspots.filter((x) => x.status !== "ns").indexOf(h) + 1), h.status === "ok" ? "sampled" : h.status === "fp" ? "false_positive" : h.status === "ns" ? "no_sample_rack_full" : "in_progress"]));
     const blob = new Blob([rows.map((r) => r.join(",")).join("\n") + "\n"], { type: "text/csv" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -444,6 +462,8 @@
   B6.arm.init($("armCanvas"), $("joints"));
   st.speed = 1; st.threshold = 0.8; st.anim = 0;
   reset();
+  document.body.classList.add("instant"); // no fade on first load
+  document.querySelectorAll(".tab, [data-goto]").forEach((b) => b.addEventListener("click", () => document.body.classList.remove("instant")));
   const initial = (location.hash || "#overview").slice(1);
   if (["overview", "mission", "how", "hardware"].includes(initial)) showTab(initial);
   // ?demo opens the live mission already running (handy for presenting); ?demo=4 sets the speed

@@ -56,9 +56,9 @@
             <button class="btn ghost" data-goto="how">See how it works</button>
           </div>
           <dl class="hero-facts">
-            <div><dt>60 s</dt><dd>of clean-water video is all it trains on</dd></div>
+            <div><dt>60 s</dt><dd>of clean-water video is all the AI trains on, on board</dd></div>
             <div><dt>0</dt><dd>labelled images needed</dd></div>
-            <div><dt>~32 FPS</dt><dd>target inference on Jetson Orin Nano</dd></div>
+            <div><dt>6</dt><dd>sample tubes carried per patrol, one per hotspot</dd></div>
           </dl>
         </div>
         <figure class="hero-photo">
@@ -70,16 +70,60 @@
       <div class="triad">
         <article>
           <h3><span>01</span> The problem</h3>
-          <p>Illegal industrial dumping into the esteros of Manila's Pasig River basin is linked to cholera, typhoid and heavy-metal exposure. Fixed sensors can't move. Manual sampling is risky and lab results take weeks.</p>
+          <p>The esteros of Manila's Pasig River basin carry industrial and household waste into Manila Bay, and contaminated floodwater spreads leptospirosis. Fixed sensors can't move. Manual sampling is risky and lab results take weeks.</p>
         </article>
         <article>
           <h3><span>02</span> Our approach</h3>
-          <p>Bayani-6 learns what <em>clean</em> water looks like, then flags anything that doesn't fit: oil sheens, sludge, foam, weed mats. It stops, records its exact SLAM position and dips its arm to collect a sample.</p>
+          <p>Bayani-6 learns what <em>clean</em> water looks like, then flags anything that doesn't fit: oil sheens, sludge, foam, weed mats. It stops, records its exact SLAM position and dips its arm to collect a sample into its on-board rack.</p>
         </article>
         <article>
           <h3><span>03</span> The output</h3>
           <p>Every hotspot is written to a CSV and turned into a contamination heatmap, so city teams can trace pollution back to the pipe it came from instead of guessing.</p>
         </article>
+      </div>
+
+      <div class="ph">
+        <div class="ph-head">
+          <div>
+            <p class="eyebrow">Why the Philippines</p>
+            <h2 class="section">The people living along the esteros live with this water every day</h2>
+          </div>
+          <p>Bayani-6 is built for Metro Manila's creeks: narrow, polluted and flood-prone, with families living right along the banks. These are documented events from the last few years.</p>
+        </div>
+        <div class="facts">
+          <article>
+            <span class="yr">FEB 2023 · ORIENTAL MINDORO</span>
+            <span class="big">800,000 L</span>
+            <p>The tanker MT Princess Empress sank carrying 800,000 litres of industrial oil. More than 99,000 people in Oriental Mindoro were affected.</p>
+            <a href="https://en.wikipedia.org/wiki/MT_Princess_Empress_oil_spill" target="_blank" rel="noopener">source ↗</a>
+          </article>
+          <article>
+            <span class="yr">JUL 2024 · MANILA BAY</span>
+            <span class="big">1.4 M L</span>
+            <p>MT Terranova capsized in Manila Bay during Typhoon Carina carrying about 1.4 million litres of industrial fuel oil.</p>
+            <a href="https://www.arabnews.com/node/2556076/amp" target="_blank" rel="noopener">source ↗</a>
+          </article>
+          <article>
+            <span class="yr">JUL–AUG 2024 · METRO MANILA</span>
+            <span class="big">5×</span>
+            <p>After the July floods, leptospirosis cases jumped from 251 to 1,184 in two weeks. Metro Manila recorded the most deaths.</p>
+            <a href="https://philstar.com/headlines/2024/08/14/2377763/2115-lepto-cases-recorded-spiking-after-carina" target="_blank" rel="noopener">source ↗</a>
+          </article>
+          <article>
+            <span class="yr">1990 → 2008 · PASIG RIVER</span>
+            <span class="big blue">“Dead”</span>
+            <p>The Pasig was declared biologically dead around 1990. In 2008 the Supreme Court ordered government agencies to clean up Manila Bay, work that now reaches the esteros.</p>
+            <a href="https://www.adb.org/features/pasig-river-clean" target="_blank" rel="noopener">source ↗</a>
+          </article>
+        </div>
+        <ul class="helps">
+          <li><b>Finds the source</b>The map shows where pollution enters the esteros, so officials can find the illegal discharge pipe.</li>
+          <li><b>Fast answers</b>A location and a sample on the spot, instead of weeks waiting for the lab.</li>
+          <li><b>Keeps people safe</b>Workers don't have to wade into contaminated water where leptospirosis spreads.</li>
+          <li><b>After disasters</b>Patrols after floods and oil spills to check whether oil is reaching neighbourhood creeks.</li>
+          <li><b>Cheap to copy</b>Off-the-shelf hardware and no internet needed, so other cities can use it too.</li>
+        </ul>
+        <p class="quote"><b>Bayani</b> means hero. This robot does the dangerous part, so the people who live by the water don't have to.</p>
       </div>
 
       <footer class="credits">
@@ -130,6 +174,7 @@
           <div class="map-wrap" id="mapWrap">
             <canvas id="mapCanvas"></canvas>
             <div class="map-hud">
+              <span class="drive">DRIVE · mecanum crab-walk, camera faces the water</span>
               <span id="cursorPos">x —  y —</span>
             </div>
             <div class="drop-tool">
@@ -167,7 +212,7 @@
 
         <div class="bottom">
           <div class="panel arm-panel">
-            <div class="panel-head"><h4>Arm · myCobot 6-DoF</h4><span class="tag" id="armState">STOWED</span></div>
+            <div class="panel-head"><h4>Arm · myCobot 6-DoF · sample rack</h4><span class="tag" id="armState">STOWED</span></div>
             <canvas id="armCanvas"></canvas>
             <div class="joints" id="joints"></div>
           </div>
@@ -227,15 +272,105 @@
         <ol class="steps">
           <li><b>01</b><h5>Patrol</h5><p>Nav2 drives a fixed waypoint route along the creek bank while Cartographer keeps a live LiDAR map.</p></li>
           <li><b>02</b><h5>See</h5><p>The Orbbec RGB-D camera streams the water surface straight into the Jetson.</p></li>
-          <li><b>03</b><h5>Detect</h5><p>A patch-based anomaly model, trained only on 60 s of clean water, scores every frame from 0 to 1.</p></li>
+          <li><b>03</b><h5>Detect</h5><p>A patch-based anomaly model, trained on board from 60 s of clean water, scores every frame from 0 to 1.</p></li>
           <li><b>04</b><h5>Decide</h5><p>Score above the trigger (0.8 by default) and not a known hotspot? The master node pauses Nav2.</p></li>
           <li><b>05</b><h5>Pin</h5><p>The robot's exact (X, Y) comes from the SLAM transform tree via tf2.</p></li>
-          <li><b>06</b><h5>Sample</h5><p>The myCobot arm runs a pre-planned dip sequence: descend, hold for 3 s, stow.</p></li>
+          <li><b>06</b><h5>Sample</h5><p>The myCobot picks a tube from the rack, dips it at the water line for 3 s and puts it back.</p></li>
           <li><b>07</b><h5>Map</h5><p>The hotspot is appended to hotspots.csv, the heatmap updates and the patrol resumes.</p></li>
         </ol>
+
+        <div class="subsec">
+          <p class="eyebrow">The camera faces forward</p>
+          <h2 class="section">So how does it watch the water while driving along the bank?</h2>
+          <p>The Orbbec camera is fixed to the front of the robot, and the water is beside the path. Bayani-6 handles this in software, using the LIMO's motion modes.</p>
+          <div class="modes">
+            <article class="best">
+              <svg viewBox="0 0 300 130" aria-hidden="true">
+                <rect x="0" y="78" width="300" height="52" fill="#bfe0e8"/><line x1="0" y1="78" x2="300" y2="78" stroke="#6f8ca0" stroke-width="2"/>
+                <path d="M128 50 L96 112 L184 112 L152 50 Z" fill="rgba(224,138,0,0.16)" stroke="rgba(224,138,0,0.6)"/>
+                <rect x="122" y="24" width="36" height="28" fill="#26323e"/><path d="M134 52 L146 52 L140 60 Z" fill="#e08a00"/>
+                <path d="M60 38 H108" stroke="#0b7f8c" stroke-width="2.5" marker-end="url(#ma)"/><path d="M172 38 H226" stroke="#0b7f8c" stroke-width="2.5" marker-end="url(#ma)"/>
+                <defs><marker id="ma" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#0b7f8c"/></marker></defs>
+                <text x="150" y="16" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#5b6b7a">drives sideways →</text>
+              </svg>
+              <h5>Crab-walk <small>USED IN THE DEMO</small></h5>
+              <p>With mecanum wheels the LIMO can drive sideways. The body, and its camera, stay pointed at the water for the whole patrol.</p>
+            </article>
+            <article>
+              <svg viewBox="0 0 300 130" aria-hidden="true">
+                <rect x="0" y="78" width="300" height="52" fill="#bfe0e8"/><line x1="0" y1="78" x2="300" y2="78" stroke="#6f8ca0" stroke-width="2"/>
+                <g transform="translate(140 38) rotate(35)">
+                  <path d="M18 -6 L80 -40 L80 40 Z" fill="rgba(224,138,0,0.16)" stroke="rgba(224,138,0,0.6)"/>
+                  <rect x="-18" y="-14" width="36" height="28" fill="#26323e"/><path d="M18 -6 L26 0 L18 6 Z" fill="#e08a00"/>
+                </g>
+                <path d="M40 30 H96" stroke="#0b7f8c" stroke-width="2.5" marker-end="url(#mb)"/>
+                <defs><marker id="mb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#0b7f8c"/></marker></defs>
+                <text x="240" y="20" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#5b6b7a">nose 35° to water</text>
+              </svg>
+              <h5>Angled patrol</h5>
+              <p>Works with the standard wheels. Waypoints keep the robot's nose turned 30–45° toward the creek, so the wide camera sees the water ahead and to the side.</p>
+            </article>
+            <article>
+              <svg viewBox="0 0 300 130" aria-hidden="true">
+                <rect x="0" y="78" width="300" height="52" fill="#bfe0e8"/><line x1="0" y1="78" x2="300" y2="78" stroke="#6f8ca0" stroke-width="2"/>
+                <rect x="70" y="26" width="36" height="28" fill="none" stroke="#8794a1" stroke-dasharray="4 3"/><path d="M106 34 L114 40 L106 46 Z" fill="#a3afba"/>
+                <path d="M150 54 L118 112 L206 112 L174 54 Z" fill="rgba(224,138,0,0.16)" stroke="rgba(224,138,0,0.6)"/>
+                <rect x="144" y="26" width="36" height="28" fill="#26323e"/><path d="M156 54 L168 54 L162 62 Z" fill="#e08a00"/>
+                <path d="M200 30 A22 22 0 0 1 196 62" fill="none" stroke="#0b7f8c" stroke-width="2.5" marker-end="url(#mc)"/>
+                <defs><marker id="mc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#0b7f8c"/></marker></defs>
+                <text x="240" y="20" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#5b6b7a">turn 90°, look, turn back</text>
+              </svg>
+              <h5>Stop and scan</h5>
+              <p>Every few metres the robot spins on the spot to face the water (differential mode turns in place), checks the surface, then turns back and drives on.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="subsec">
+          <p class="eyebrow">Sample handling</p>
+          <h2 class="section">Where the samples go</h2>
+          <div class="sample-grid">
+            <div class="panel">
+              <svg viewBox="0 0 520 250" aria-hidden="true">
+                <rect x="0" y="182" width="300" height="68" fill="#dfe5ea"/><rect x="300" y="196" width="220" height="54" fill="#bfe0e8"/>
+                <line x1="300" y1="182" x2="300" y2="250" stroke="#6f8ca0" stroke-width="2"/><line x1="300" y1="196" x2="520" y2="196" stroke="#0b7f8c" stroke-width="2"/>
+                <circle cx="70" cy="168" r="14" fill="#4a5661"/><circle cx="210" cy="168" r="14" fill="#4a5661"/>
+                <rect x="40" y="118" width="200" height="40" fill="#26323e"/>
+                <g>
+                  <rect x="52" y="96" width="96" height="10" fill="#eef2f5" stroke="#b4c0cb"/>
+                  <g fill="#fff" stroke="#7d8e9c" stroke-width="1.2">
+                    <rect x="57" y="70" width="10" height="34"/><rect x="72" y="70" width="10" height="34"/><rect x="87" y="70" width="10" height="34"/>
+                    <rect x="102" y="70" width="10" height="34"/><rect x="117" y="70" width="10" height="34"/><rect x="132" y="70" width="10" height="34"/>
+                  </g>
+                  <rect x="58.5" y="80" width="7" height="22.5" fill="#0b9aa8"/><rect x="73.5" y="86" width="7" height="16.5" fill="#0b9aa8"/>
+                  <g font-family="IBM Plex Mono" font-size="9" fill="#3b4856"><text x="56" y="62">H1 H2 H3 H4 H5 H6</text></g>
+                </g>
+                <rect x="183" y="104" width="16" height="14" fill="#8193a3"/>
+                <path d="M191 104 L250 52 L330 120 L338 176" fill="none" stroke="#7d8e9c" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M191 104 L250 52 L330 120 L338 176" fill="none" stroke="#f4f7f9" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="333" y="174" width="10" height="30" fill="#fff" stroke="#e08a00" stroke-width="2"/>
+                <ellipse cx="338" cy="196" rx="22" ry="4" fill="none" stroke="#0b7f8c"/>
+                <line x1="191" y1="230" x2="338" y2="230" stroke="#5b6b7a"/><line x1="191" y1="224" x2="191" y2="236" stroke="#5b6b7a"/><line x1="338" y1="224" x2="338" y2="236" stroke="#5b6b7a"/>
+                <text x="264" y="245" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#3b4856">reach ≤ 280 mm</text>
+                <text x="100" y="200" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#3b4856">rear deck rack</text>
+              </svg>
+            </div>
+            <div class="panel">
+              <ul class="sample-list">
+                <li><b>Rack on the rear deck:</b> a 3D-printed holder with six 10–15 ml screw-cap tubes.</li>
+                <li><b>One tube per hotspot:</b> slot <i>n</i> holds the sample for hotspot H<i>n</i>, so every tube matches a row in hotspots.csv.</li>
+                <li><b>Sequence:</b> pick the tube from slot <i>n</i>, dip at the water line for 3 s, put it back, stow the arm.</li>
+                <li><b>Within limits:</b> a full tube weighs under 30 g. The arm lifts 250 g and the base carries several kilograms.</li>
+                <li><b>Rack full?</b> The robot keeps mapping and logs extra hotspots without a sample.</li>
+              </ul>
+              <p class="note">Prototype limits: the arm reaches 280 mm, so the demo arena keeps the water within about 20 cm of the bank edge. Real esteros have high walls, so the next version lowers a weighted tube or a small pump line. The LIMO has no published waterproof rating, so the tubes sit well away from the electronics.</p>
+            </div>
+          </div>
+        </div>
+
         <div class="why panel">
           <h3>Why unsupervised?</h3>
-          <p>Pollution doesn't come in tidy labelled classes. A slick can be rainbow or grey; foam, sludge and weeds change with light and season. Instead of training on thousands of labelled pictures of dirt, Bayani-6 learns one thing really well: what normal water looks like. Anything that doesn't fit gets a high score.</p>
+          <p>Pollution doesn't come in tidy labelled classes. A slick can be rainbow or grey; foam, sludge and weeds change with light and season. Instead of training on thousands of labelled pictures of dirt, Bayani-6 learns one thing really well, on the robot itself: what normal water looks like. Anything that doesn't fit gets a high score.</p>
         </div>
       </div>
     </section>
@@ -250,18 +385,25 @@
           <p class="eyebrow">Unmodified off-the-shelf platform</p>
           <h2>AgileX LIMO Cobot</h2>
           <p class="lede small">No custom hardware. Every capability in Bayani-6 is software running on a stock robot, which keeps it cheap to copy for other cities.</p>
-          <ul class="spec-list">
-            <li><b>Compute</b><span>NVIDIA Jetson Orin Nano · Ubuntu 22.04 · ROS 2 Humble</span></li>
-            <li><b>Vision</b><span>Orbbec RGB-D depth camera</span></li>
-            <li><b>Navigation</b><span>2D LiDAR · Cartographer SLAM · Nav2</span></li>
-            <li><b>Manipulator</b><span>myCobot 280 6-DoF arm · pre-planned dip sequence</span></li>
-            <li><b>Model</b><span>Patch-based unsupervised anomaly detector, TensorRT engine</span></li>
-            <li><b>Output</b><span>hotspots.csv → 2D contamination heatmap</span></li>
-          </ul>
+          <table class="feat">
+            <thead><tr><th>Feature</th><th>Spec</th><th>Why it matters here</th></tr></thead>
+            <tbody>
+              <tr><td>4 motion modes</td><td>Ackermann · differential · mecanum · tracked</td><td>Tracks for muddy banks (up to 45° climb), mecanum to crab-walk with the camera on the water, differential to spin in place.</td></tr>
+              <tr><td>Depth camera</td><td>Orbbec RGB-D</td><td>Colour to spot pollution, depth to judge distance to the water and the bank edge.</td></tr>
+              <tr><td>LiDAR + SLAM</td><td>EAI T-mini Pro · Cartographer / Gmapping / RTAB-Map</td><td>Builds the map, so every hotspot gets exact (X, Y) coordinates.</td></tr>
+              <tr><td>IMU</td><td>High-precision IMU</td><td>Steadier position tracking on bumpy ground.</td></tr>
+              <tr><td>On-board AI</td><td>NVIDIA Jetson Orin Nano</td><td>The model trains and runs on the robot. No internet needed in flood zones.</td></tr>
+              <tr><td>Robotic arm</td><td>myCobot 280 · 6-DoF · 280 mm · 250 g · ±0.5 mm</td><td>Precise, repeatable dip sampling into the tube rack.</td></tr>
+              <tr><td>Software</td><td>ROS 1/2 · Python &amp; C++ SDK · DWA/TEB nav · simulation</td><td>Standard, open tools that are easy to extend.</td></tr>
+              <tr><td>Size &amp; runtime</td><td>322 × 220 × 251 mm · 5.6 kg · 2.5 h</td><td>Fits narrow estero walkways, one person can carry it, covers a full patrol shift.</td></tr>
+            </tbody>
+          </table>
+          <p class="note">Specifications from AgileX Robotics. Mecanum wheels and tracks are optional accessories.</p>
           <h3 class="next-h">Next up</h3>
           <ul class="next">
             <li>Plain-English search with a vision-language model: <em>"find frothy run-off"</em></li>
             <li>pH, conductivity and turbidity probes on the gripper</li>
+            <li>A pump line for high-walled esteros, and a sealed enclosure</li>
             <li>Several robots sharing one map over Wi-Fi</li>
           </ul>
         </div>

@@ -184,34 +184,34 @@
     const X = (x) => ox + x * s, Y = (y) => oy + y * s;
     const view = { s, ox, oy };
 
-    ctx.fillStyle = "#0b1016";
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, cw, ch);
 
     // ground + grid
-    ctx.fillStyle = "#0e151c";
+    ctx.fillStyle = "#f6f8fa";
     ctx.fillRect(X(0), Y(0), W * s, H * s);
     ctx.lineWidth = 1;
     for (let x = 0; x <= W; x++) {
-      ctx.strokeStyle = x % 5 === 0 ? "#1a2631" : "#131c25";
+      ctx.strokeStyle = x % 5 === 0 ? "#dbe2e8" : "#eaeef2";
       ctx.beginPath(); ctx.moveTo(Math.round(X(x)) + 0.5, Y(0)); ctx.lineTo(Math.round(X(x)) + 0.5, Y(H)); ctx.stroke();
     }
     for (let y = 0; y <= H; y++) {
-      ctx.strokeStyle = y % 5 === 0 ? "#1a2631" : "#131c25";
+      ctx.strokeStyle = y % 5 === 0 ? "#dbe2e8" : "#eaeef2";
       ctx.beginPath(); ctx.moveTo(X(0), Math.round(Y(y)) + 0.5); ctx.lineTo(X(W), Math.round(Y(y)) + 0.5); ctx.stroke();
     }
 
     // buildings (hatched)
     for (const b of buildings) {
-      ctx.fillStyle = "#151f29";
+      ctx.fillStyle = "#e6ebf0";
       ctx.fillRect(X(b.x), Y(b.y), b.w * s, b.h * s);
       ctx.save();
       ctx.beginPath(); ctx.rect(X(b.x), Y(b.y), b.w * s, b.h * s); ctx.clip();
-      ctx.strokeStyle = "#1c2935"; ctx.lineWidth = 1;
+      ctx.strokeStyle = "#d3dbe3"; ctx.lineWidth = 1;
       for (let k = -b.h * s; k < b.w * s; k += 9) {
         ctx.beginPath(); ctx.moveTo(X(b.x) + k, Y(b.y) + b.h * s); ctx.lineTo(X(b.x) + k + b.h * s, Y(b.y)); ctx.stroke();
       }
       ctx.restore();
-      ctx.strokeStyle = "#2a3b4c"; ctx.lineWidth = 1.2;
+      ctx.strokeStyle = "#b4c0cb"; ctx.lineWidth = 1.2;
       ctx.strokeRect(X(b.x) + 0.5, Y(b.y) + 0.5, b.w * s - 1, b.h * s - 1);
     }
 
@@ -220,10 +220,10 @@
     northBank.forEach((p, i) => (i ? ctx.lineTo(X(p[0]), Y(p[1])) : ctx.moveTo(X(p[0]), Y(p[1]))));
     for (let i = southBank.length - 1; i >= 0; i--) ctx.lineTo(X(southBank[i][0]), Y(southBank[i][1]));
     ctx.closePath();
-    ctx.fillStyle = "#0d3540";
+    ctx.fillStyle = "#bfe0e8";
     ctx.fill();
     ctx.save(); ctx.clip();
-    ctx.strokeStyle = "rgba(80, 190, 205, 0.22)"; ctx.lineWidth = 1.2;
+    ctx.strokeStyle = "rgba(20, 110, 130, 0.28)"; ctx.lineWidth = 1.2;
     const N = 70;
     for (let i = 0; i < N; i++) {
       const u = ((i / N) * (W + 2) + st.time * 0.35) % (W + 2) - 1;
@@ -248,7 +248,7 @@
     }
 
     // banks / railings
-    ctx.strokeStyle = "#3a5468"; ctx.lineWidth = 1.6;
+    ctx.strokeStyle = "#6f8ca0"; ctx.lineWidth = 1.8;
     ctx.beginPath();
     for (const bank of [northBank, southBank]) {
       let pen = false;
@@ -263,16 +263,16 @@
     for (const b of BRIDGES) {
       const x1 = X(b - BRIDGE_HALF), x2 = X(b + BRIDGE_HALF);
       const y1 = Y(cy(b) - 2.0), y2 = Y(cy(b) + 2.0);
-      ctx.fillStyle = "#1d2934"; ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
-      ctx.strokeStyle = "#2b3b4a"; ctx.lineWidth = 1;
+      ctx.fillStyle = "#d9e0e6"; ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+      ctx.strokeStyle = "#bcc7d1"; ctx.lineWidth = 1;
       for (let yy = y1 + 4; yy < y2; yy += 6) { ctx.beginPath(); ctx.moveTo(x1, yy); ctx.lineTo(x2, yy); ctx.stroke(); }
-      ctx.strokeStyle = "#4a6377"; ctx.lineWidth = 2;
+      ctx.strokeStyle = "#5f788b"; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x1, y2); ctx.moveTo(x2, y1); ctx.lineTo(x2, y2); ctx.stroke();
     }
 
     // patrol route
     ctx.save();
-    ctx.setLineDash([3, 6]); ctx.strokeStyle = "#2d4152"; ctx.lineWidth = 1.2;
+    ctx.setLineDash([3, 6]); ctx.strokeStyle = "#9aabb9"; ctx.lineWidth = 1.2;
     ctx.beginPath();
     route.forEach((p, i) => (i ? ctx.lineTo(X(p[0]), Y(p[1])) : ctx.moveTo(X(p[0]), Y(p[1]))));
     ctx.closePath(); ctx.stroke();
@@ -280,7 +280,7 @@
 
     // trail
     if (st.trail.length > 1) {
-      ctx.strokeStyle = "rgba(43, 179, 192, 0.55)"; ctx.lineWidth = 2;
+      ctx.strokeStyle = "rgba(11, 127, 140, 0.75)"; ctx.lineWidth = 2.2;
       ctx.beginPath();
       st.trail.forEach((p, i) => (i ? ctx.lineTo(X(p[0]), Y(p[1])) : ctx.moveTo(X(p[0]), Y(p[1]))));
       ctx.stroke();
@@ -290,11 +290,11 @@
 
     // LiDAR
     if (opts.lidar && st.scan) {
-      ctx.strokeStyle = "rgba(94, 234, 212, 0.07)"; ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(11, 127, 140, 0.09)"; ctx.lineWidth = 1;
       ctx.beginPath();
       for (const p of st.scan) { ctx.moveTo(X(r.x), Y(r.y)); ctx.lineTo(X(p[0]), Y(p[1])); }
       ctx.stroke();
-      ctx.fillStyle = "#5eead4";
+      ctx.fillStyle = "#0b9aa8";
       for (const p of st.scan) if (p[2]) ctx.fillRect(X(p[0]) - 1.2, Y(p[1]) - 1.2, 2.4, 2.4);
     }
 
@@ -308,9 +308,9 @@
       ctx.lineTo(X(r.x + Math.cos(cam.dir + spread) * L), Y(r.y + Math.sin(cam.dir + spread) * L));
       ctx.closePath();
       const hot = st.score > st.threshold;
-      ctx.fillStyle = hot ? "rgba(255, 77, 61, 0.16)" : "rgba(255, 176, 32, 0.09)";
+      ctx.fillStyle = hot ? "rgba(217, 58, 43, 0.16)" : "rgba(224, 138, 0, 0.12)";
       ctx.fill();
-      ctx.strokeStyle = hot ? "rgba(255, 77, 61, 0.6)" : "rgba(255, 176, 32, 0.35)";
+      ctx.strokeStyle = hot ? "rgba(217, 58, 43, 0.7)" : "rgba(224, 138, 0, 0.55)";
       ctx.lineWidth = 1; ctx.stroke();
     }
 
@@ -320,13 +320,13 @@
       const hx = X(h.x), hy = Y(h.y), k = 7;
       if (i === st.hotspots.length - 1 && st.time - h.t < 6) {
         const ph = ((st.time - h.t) % 1.5) / 1.5;
-        ctx.strokeStyle = `rgba(255, 77, 61, ${1 - ph})`; ctx.lineWidth = 2;
+        ctx.strokeStyle = `rgba(217, 58, 43, ${1 - ph})`; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.arc(hx, hy, 8 + ph * 22, 0, Math.PI * 2); ctx.stroke();
       }
       ctx.beginPath(); ctx.moveTo(hx, hy - k); ctx.lineTo(hx + k, hy); ctx.lineTo(hx, hy + k); ctx.lineTo(hx - k, hy); ctx.closePath();
-      ctx.fillStyle = h.falsePositive ? "#7f8d9b" : "#ff4d3d"; ctx.fill();
-      ctx.strokeStyle = "#0b1016"; ctx.lineWidth = 1.5; ctx.stroke();
-      ctx.fillStyle = h.falsePositive ? "#9aa7b3" : "#ffd0ca";
+      ctx.fillStyle = h.falsePositive ? "#8794a1" : "#d93a2b"; ctx.fill();
+      ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.fillStyle = h.falsePositive ? "#5b6b7a" : "#a32a1e";
       ctx.fillText(h.id, hx + 10, hy - 6);
     });
 
@@ -336,30 +336,30 @@
     ctx.translate(X(r.x), Y(r.y));
     if (st.mode === "sample" || st.mode === "halt" || st.mode === "pin") {
       const ph = (st.time % 1) / 1;
-      ctx.strokeStyle = `rgba(255, 176, 32, ${0.8 - ph * 0.8})`; ctx.lineWidth = 2;
+      ctx.strokeStyle = `rgba(224, 138, 0, ${0.9 - ph * 0.9})`; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(0, 0, bodyL * 0.7 + ph * 16, 0, Math.PI * 2); ctx.stroke();
     }
     ctx.rotate(r.heading);
     ctx.fillStyle = "#0b1016";
     const wl = bodyL * 0.3, ww = bodyW * 0.22;
     for (const [wx, wy] of [[-bodyL * 0.32, -bodyW / 2 - ww * 0.4], [bodyL * 0.32, -bodyW / 2 - ww * 0.4], [-bodyL * 0.32, bodyW / 2 + ww * 0.4], [bodyL * 0.32, bodyW / 2 + ww * 0.4]]) {
-      ctx.fillStyle = "#2a3540"; ctx.fillRect(wx - wl / 2, wy - ww / 2, wl, ww);
+      ctx.fillStyle = "#4a5661"; ctx.fillRect(wx - wl / 2, wy - ww / 2, wl, ww);
     }
-    ctx.fillStyle = "#e6edf3"; ctx.fillRect(-bodyL / 2, -bodyW / 2, bodyL, bodyW);
-    ctx.fillStyle = "#1b232c"; ctx.fillRect(-bodyL / 2 + 2, -bodyW / 2 + 2, bodyL * 0.42, bodyW - 4);
-    ctx.fillStyle = "#ffb020";
+    ctx.fillStyle = "#26323e"; ctx.fillRect(-bodyL / 2, -bodyW / 2, bodyL, bodyW);
+    ctx.fillStyle = "#e9eef2"; ctx.fillRect(-bodyL / 2 + 2, -bodyW / 2 + 2, bodyL * 0.42, bodyW - 4);
+    ctx.fillStyle = "#e08a00";
     ctx.beginPath(); ctx.moveTo(bodyL / 2 + 6, 0); ctx.lineTo(bodyL / 2 - 1, -5); ctx.lineTo(bodyL / 2 - 1, 5); ctx.closePath(); ctx.fill();
     ctx.restore();
 
     // scale bar + north arrow
     const sx = X(0) + 14, sy = Y(H) - 16;
-    ctx.strokeStyle = "#7f8d9b"; ctx.lineWidth = 2;
+    ctx.strokeStyle = "#5b6b7a"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + 5 * s, sy); ctx.moveTo(sx, sy - 4); ctx.lineTo(sx, sy + 4); ctx.moveTo(sx + 5 * s, sy - 4); ctx.lineTo(sx + 5 * s, sy + 4); ctx.stroke();
-    ctx.fillStyle = "#7f8d9b"; ctx.font = "11px 'IBM Plex Mono', monospace";
+    ctx.fillStyle = "#5b6b7a"; ctx.font = "11px 'IBM Plex Mono', monospace";
     ctx.fillText("5 m", sx + 5 * s + 8, sy + 4);
     const nx = X(W) - 22, ny = Y(0) + 26;
     ctx.beginPath(); ctx.moveTo(nx, ny - 14); ctx.lineTo(nx + 6, ny + 2); ctx.lineTo(nx, ny - 2); ctx.lineTo(nx - 6, ny + 2); ctx.closePath();
-    ctx.fillStyle = "#7f8d9b"; ctx.fill();
+    ctx.fillStyle = "#5b6b7a"; ctx.fill();
     ctx.fillText("N", nx - 4, ny + 16);
 
     return view;
@@ -378,10 +378,10 @@
         ctx.fill();
       });
     } else if (a.type === "foam") {
-      ctx.fillStyle = "rgba(232,238,243,0.75)";
+      ctx.fillStyle = "rgba(255,255,255,0.95)"; ctx.strokeStyle = "rgba(90,110,125,0.6)"; ctx.lineWidth = 1;
       for (let i = 0; i < 9; i++) {
         const ang = i * 2.4, rr = R * 0.55 * ((i % 3) / 3 + 0.3);
-        ctx.beginPath(); ctx.arc(x + Math.cos(ang) * rr, y + Math.sin(ang) * rr * 0.8, R * 0.22, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(x + Math.cos(ang) * rr, y + Math.sin(ang) * rr * 0.8, R * 0.22, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       }
     } else if (a.type === "sludge") {
       ctx.fillStyle = "rgba(118,82,40,0.85)";
